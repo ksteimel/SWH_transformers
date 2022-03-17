@@ -1,0 +1,7 @@
+name: swh_transformers
+channels:
+  - conda-forge
+dependencies:
+  - pytest
+  - transformers
+  - pandas
