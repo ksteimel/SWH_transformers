@@ -4,4 +4,7 @@ channels:
 dependencies:
   - pytest
   - transformers
+  - tokenizers
+  - ipython
   - pandas
+  - python<3.10,>=3.9
