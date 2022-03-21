@@ -16,4 +16,6 @@ special_tokens = ["<s>", "<pad>", "</s>", "<unk>", "<mask>"]
 # Train the tokenizer with a vocab size of 52,000 and the specified special tokens.
 tokenizer.train(files=[file_path], vocab_size=52000, min_frequency=2, 
                 special_tokens=special_tokens)
-tokenizer.save_model(".", "swh_basic_bpe")
+output_dir = Path("models/swh_basic_bpe")
+output_dir.mkdir(parents=True, exist_ok=True)
+tokenizer.save_model("models/swh_basic_bpe")
