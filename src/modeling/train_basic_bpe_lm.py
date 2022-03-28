@@ -1,3 +1,4 @@
+import os
 import tokenizers
 from tokenizers.implementations import ByteLevelBPETokenizer
 from tokenizers.processors import BertProcessing
@@ -7,7 +8,7 @@ from transformers import RobertaForMaskedLM
 from transformers import LineByLineTextDataset
 from transformers import DataCollatorForLanguageModeling
 from transformers import Trainer, TrainingArguments
-
+import torch
 # Set up the neural network parameters
 config = RobertaConfig(
     vocab_size=52000,
@@ -23,12 +24,16 @@ model = RobertaForMaskedLM(config=config)
 # Create a dataset to process each line in the training data
 # TODO: rewrite this dataset to be lazy, this currently loads everything into memory which
 # consumes a large amount of ram.
-dataset = LineByLineTextDataset(
+train_dataset = LineByLineTextDataset(
     tokenizer=tokenizer,
     file_path="/mnt/data/corpora/swh/train.txt",
-    block_size=128
+    block_size=512
 )
-# TODO create evaluation dataset from swh_* directories.s 
+validation_dataset = LineByLineTextDataset(
+    tokenizer=tokenizer,
+    file_path="/mnt/data/corpora/swh/valid.txt",
+    block_size=512
+)
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer, mlm=True, mlm_probability=0.15
 )
@@ -37,18 +42,22 @@ checkpoint_path = model_save_path + "_checkpoints"
 training_args = TrainingArguments(
     output_dir=checkpoint_path,
     overwrite_output_dir=True,
-    num_train_epochs=1,
-    per_device_train_batch_size=32,
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
     save_steps=10_000,
+    gradient_accumulation_steps=2,
     save_total_limit=2,
     prediction_loss_only=True,
+    evaluation_strategy="epoch",
+
 )
-print(f"Dataset length: {len(dataset.examples)}")
+print(f"Training dataset length: {len(train_dataset.examples)}")
 trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=dataset,
+    train_dataset=train_dataset,
+    eval_dataset=validation_dataset
 )
 # Train the thing and monitor progress
 trainer.train()
