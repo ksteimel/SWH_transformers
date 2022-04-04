@@ -9,4 +9,5 @@ dependencies:
   - ipython
   - pandas
   - pytorch-gpu
+  - cudatoolkit>11
   - python<3.10,>=3.9
